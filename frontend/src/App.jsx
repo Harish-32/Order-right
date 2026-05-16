@@ -6,8 +6,8 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import FarmerDashboard from "./pages/FarmerDashboard";
 import FarmerOrders from "./pages/FarmerOrders";
-import MyOrders from "./pages/temp1";
-import MyProducts from "./pages/temp2";
+import MyOrders from "./pages/MyOrders";
+import MyProducts from "./pages/MyProducts";
 import EditProduct from "./pages/EditProduct";
 function App() {
   return (
