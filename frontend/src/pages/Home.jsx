@@ -1,6 +1,12 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import axios from "axios";
+
 import Navbar from "../components/Navbar";
+
 import ProductCard from "../components/ProductCard";
 
 // Distance Calculation Function
@@ -48,10 +54,11 @@ function Home() {
     setUserLocation] =
     useState(null);
 
-  // Fetch Products + User Location
+  // Get User Location + Fetch Products
   useEffect(() => {
 
     navigator.geolocation.getCurrentPosition(
+
       (position) => {
 
         setUserLocation({
@@ -63,6 +70,12 @@ function Home() {
             position.coords.longitude,
 
         });
+
+      },
+
+      (error) => {
+
+        console.log(error);
 
       }
     );
@@ -77,60 +90,97 @@ function Home() {
     try {
 
       const res = await axios.get(
-       `${import.meta.env.VITE_API_URL}/api/products`
+        `${import.meta.env.VITE_API_URL}/api/products`
       );
 
-      setProducts(res.data);
+      console.log(
+        "Products API:",
+        res.data
+      );
+
+      if (
+        Array.isArray(res.data)
+      ) {
+
+        setProducts(res.data);
+
+      } else {
+
+        console.log(
+          "Products response is not array"
+        );
+
+        setProducts([]);
+      }
 
     } catch (error) {
 
-      console.log(error);
+      console.log(
+        "Fetch Products Error:",
+        error
+      );
 
+      setProducts([]);
     }
   };
 
-  // Filter Nearby Products
+  // Filter Products
   const filteredProducts =
-    products.filter((product) => {
+    Array.isArray(products)
 
-      const matchesSearch =
-        product.productName
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          );
+      ? products.filter(
+          (product) => {
 
-      if (
-        !userLocation ||
-        !product.location
-      ) {
-        return matchesSearch;
-      }
+            const matchesSearch =
 
-      const distance =
-        calculateDistance(
+              product.productName
+                ?.toLowerCase()
 
-          userLocation.latitude,
+                .includes(
+                  search.toLowerCase()
+                );
 
-          userLocation.longitude,
+            if (
+              !userLocation ||
+              !product.location
+            ) {
 
-          Number(
-            product.location.latitude
-          ),
+              return matchesSearch;
+            }
 
-          Number(
-            product.location.longitude
-          )
-        );
+            const distance =
 
-      return (
-        matchesSearch &&
-        distance <=
-          product.deliveryRadius
-      );
-    });
+              calculateDistance(
+
+                userLocation.latitude,
+
+                userLocation.longitude,
+
+                Number(
+                  product.location
+                    ?.latitude
+                ),
+
+                Number(
+                  product.location
+                    ?.longitude
+                )
+              );
+
+            return (
+
+              matchesSearch &&
+
+              distance <=
+                product.deliveryRadius
+            );
+          }
+        )
+
+      : [];
 
   return (
+
     <div>
 
       <Navbar />
@@ -138,7 +188,7 @@ function Home() {
       {/* Hero Section */}
       <section className="bg-green-100 min-h-[60vh] flex items-center justify-center">
 
-        <div className="text-center">
+        <div className="text-center px-4">
 
           <h1 className="text-6xl font-bold text-green-700 mb-5">
             Fresh Organic Foods
@@ -156,7 +206,9 @@ function Home() {
       <section className="p-10">
 
         <h1 className="text-4xl font-bold text-green-700 mb-10 text-center">
+
           Nearby Organic Products
+
         </h1>
 
         {/* Search */}
@@ -167,7 +219,9 @@ function Home() {
             placeholder="Search products..."
             value={search}
             onChange={(e) =>
-              setSearch(e.target.value)
+              setSearch(
+                e.target.value
+              )
             }
             className="border p-3 rounded-xl w-full md:w-[40%]"
           />
@@ -177,15 +231,26 @@ function Home() {
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
 
-          {filteredProducts.map(
-            (product) => (
+          {filteredProducts.length >
+          0 ? (
 
-              <ProductCard
-                key={product._id}
-                product={product}
-              />
+            filteredProducts.map(
+              (product) => (
 
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                />
+              )
             )
+
+          ) : (
+
+            <div className="col-span-3 text-center text-gray-500 text-xl">
+
+              No Products Found
+
+            </div>
           )}
 
         </div>
